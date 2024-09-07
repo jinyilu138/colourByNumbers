@@ -7,9 +7,9 @@ int main()
     sf::RenderWindow window(sf::VideoMode(640, 480), "Jinyi Rocks!", sf::Style::Default);
     sf::Texture texture;
 
-    if (!texture.loadFromFile("images/sfml-logo-small.png")) {
+    if (!texture.loadFromFile("../images/sfml-logo-small.png")) {
         std::cout << "Could not load texture" << std::endl;
-        std::cout << "Current working directory: " << std::filesystem::current_path() << std::endl;
+        std::cout << "Current working directory: " << std::__1::__fs::filesystem::current_path() << std::endl;
 
         return 0;
     }

@@ -1,0 +1,3 @@
+/Users/jinyilu/Desktop/projects/colour/build/CMakeFiles/colour.dir
+/Users/jinyilu/Desktop/projects/colour/build/CMakeFiles/edit_cache.dir
+/Users/jinyilu/Desktop/projects/colour/build/CMakeFiles/rebuild_cache.dir

@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 project(colour)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(SOURCE_FILES main.cpp)
 add_executable(colour ${SOURCE_FILES})
