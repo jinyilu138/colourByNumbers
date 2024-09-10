@@ -1,7 +1,7 @@
 [
 {
   "directory": "/Users/jinyilu/Desktop/projects/colour/build",
-  "command": "/usr/bin/clang++  -isystem /usr/local/include -g -std=gnu++17 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk -o CMakeFiles/colour.dir/main.cpp.o -c /Users/jinyilu/Desktop/projects/colour/main.cpp",
+  "command": "/usr/bin/clang++  -isystem /usr/local/include -isystem /usr/local/Cellar/opencv/4.10.0_5/include/opencv4 -g -std=gnu++17 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk -o CMakeFiles/colour.dir/main.cpp.o -c /Users/jinyilu/Desktop/projects/colour/main.cpp",
   "file": "/Users/jinyilu/Desktop/projects/colour/main.cpp",
   "output": "CMakeFiles/colour.dir/main.cpp.o"
 }

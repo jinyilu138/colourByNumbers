@@ -24,6 +24,8 @@ set(CMAKE_MAKEFILE_DEPENDS
   "/usr/local/Cellar/cmake/3.30.3/share/cmake/Modules/Compiler/CMakeCommonCompilerMacros.cmake"
   "/usr/local/Cellar/cmake/3.30.3/share/cmake/Modules/Compiler/Clang.cmake"
   "/usr/local/Cellar/cmake/3.30.3/share/cmake/Modules/Compiler/GNU.cmake"
+  "/usr/local/Cellar/cmake/3.30.3/share/cmake/Modules/FindPackageHandleStandardArgs.cmake"
+  "/usr/local/Cellar/cmake/3.30.3/share/cmake/Modules/FindPackageMessage.cmake"
   "/usr/local/Cellar/cmake/3.30.3/share/cmake/Modules/Platform/Apple-AppleClang-C.cmake"
   "/usr/local/Cellar/cmake/3.30.3/share/cmake/Modules/Platform/Apple-AppleClang-CXX.cmake"
   "/usr/local/Cellar/cmake/3.30.3/share/cmake/Modules/Platform/Apple-Clang-C.cmake"
@@ -37,6 +39,10 @@ set(CMAKE_MAKEFILE_DEPENDS
   "/usr/local/lib/cmake/SFML/SFMLConfigVersion.cmake"
   "/usr/local/lib/cmake/SFML/SFMLSharedTargets-release.cmake"
   "/usr/local/lib/cmake/SFML/SFMLSharedTargets.cmake"
+  "/usr/local/lib/cmake/opencv4/OpenCVConfig-version.cmake"
+  "/usr/local/lib/cmake/opencv4/OpenCVConfig.cmake"
+  "/usr/local/lib/cmake/opencv4/OpenCVModules-release.cmake"
+  "/usr/local/lib/cmake/opencv4/OpenCVModules.cmake"
   )
 
 # The corresponding makefile is:
