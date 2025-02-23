@@ -2,139 +2,13 @@
 #include <iostream>
 #include <filesystem>
 #include <opencv4/opencv2/opencv.hpp>
+#include <mapbox/polylabel.hpp>
 
 struct RegionInfo {
     std::vector<cv::Point> contour;
     int clusterLabel;
     cv::Point centroid;
     double area;
-};
-
-struct Point {
-    double x, y;
-};
-
-class PoleOfInaccessibility {
-public:
-    PoleOfInaccessibility(double precision = 1.0) : precision(precision) {}
-
-    Point findOptimalLabelPosition(const std::vector<cv::Point>& contour) {
-        std::vector<std::vector<cv::Point>> polygon = { contour };
-        cv::Rect bbox = cv::boundingRect(contour);
-        double minX = bbox.x, minY = bbox.y;
-        double maxX = bbox.x + bbox.width, maxY = bbox.y + bbox.height;
-
-        double width = maxX - minX;
-        double height = maxY - minY;
-        double cellSize = std::min(width, height);
-        double h = cellSize / 2;
-
-        std::priority_queue<Cell> cellQueue;
-
-        for (double x = minX; x < maxX; x += cellSize) {
-            for (double y = minY; y < maxY; y += cellSize) {
-                cellQueue.push(Cell(x + h, y + h, h, polygon));
-            }
-        }
-
-        Cell bestCell = getCentroidCell(polygon);
-
-        while (!cellQueue.empty()) {
-            Cell cell = cellQueue.top();
-            cellQueue.pop();
-
-            if (cell.d > bestCell.d) {
-                bestCell = cell;
-            }
-
-            if (cell.max - bestCell.d <= precision) continue;
-
-            h = cell.h / 2;
-            cellQueue.push(Cell(cell.x - h, cell.y - h, h, polygon));
-            cellQueue.push(Cell(cell.x + h, cell.y - h, h, polygon));
-            cellQueue.push(Cell(cell.x - h, cell.y + h, h, polygon));
-            cellQueue.push(Cell(cell.x + h, cell.y + h, h, polygon));
-        }
-
-        return { bestCell.x, bestCell.y };
-    }
-
-private:
-    double precision;
-
-    struct Cell {
-        double x, y, h, d, max;
-        Cell(double x, double y, double h, const std::vector<std::vector<cv::Point>>& polygon)
-            : x(x), y(y), h(h) {
-            d = PoleOfInaccessibility::pointToPolygonDist(x, y, polygon); // Call static function
-            max = d + h * std::sqrt(2);
-        }
-
-        bool operator<(const Cell& other) const {
-            return max < other.max;
-        }
-    };
-
-    static double pointToPolygonDist(double x, double y, const std::vector<std::vector<cv::Point>>& polygon) {
-        bool inside = false;
-        double minDistSq = std::numeric_limits<double>::max();
-
-        for (const auto& ring : polygon) {
-            for (size_t i = 0, j = ring.size() - 1; i < ring.size(); j = i++) {
-                const cv::Point& a = ring[i];
-                const cv::Point& b = ring[j];
-
-                if ((a.y > y) != (b.y > y) &&
-                    (x < (b.x - a.x) * (y - a.y) / (b.y - a.y) + a.x)) {
-                    inside = !inside;
-                }
-
-                minDistSq = std::min(minDistSq, getSegDistSq(x, y, a, b));
-            }
-        }
-
-        return (inside ? 1 : -1) * std::sqrt(minDistSq);
-    }
-
-    static double getSegDistSq(double px, double py, const cv::Point& a, const cv::Point& b) {
-        double x = a.x, y = a.y;
-        double dx = b.x - x, dy = b.y - y;
-
-        if (dx != 0 || dy != 0) {
-            double t = ((px - x) * dx + (py - y) * dy) / (dx * dx + dy * dy);
-            if (t > 1) {
-                x = b.x;
-                y = b.y;
-            } else if (t > 0) {
-                x += dx * t;
-                y += dy * t;
-            }
-        }
-
-        dx = px - x;
-        dy = py - y;
-        return dx * dx + dy * dy;
-    }
-
-    Cell getCentroidCell(const std::vector<std::vector<cv::Point>>& polygon) {
-        double area = 0, x = 0, y = 0;
-        const auto& points = polygon[0];
-
-        for (size_t i = 0, len = points.size(), j = len - 1; i < len; j = i++) {
-            const cv::Point& a = points[i];
-            const cv::Point& b = points[j];
-            double f = a.x * b.y - b.x * a.y;
-            x += (a.x + b.x) * f;
-            y += (a.y + b.y) * f;
-            area += f * 3;
-        }
-
-        if (area == 0) {
-            return Cell(points[0].x, points[0].y, 0, polygon);
-        }
-
-        return Cell(x / area, y / area, 0, polygon);
-    }
 };
 
 class imageProcess {
@@ -307,14 +181,28 @@ class imageProcess {
         }
 
         bool labelRegions() {
+            for (const auto& region : regions) {
+                // Convert OpenCV contour to mapbox polygon format
+                mapbox::geometry::polygon<double> polygon;
+                mapbox::geometry::linear_ring<double> ring;
+                
+                // Add each point from the contour to the ring
+                for (const auto& point : region.contour) {
+                    ring.push_back({static_cast<double>(point.x), static_cast<double>(point.y)});
+                }
+                // Close the ring by adding the first point again if needed
+                if (ring.front() != ring.back()) {
+                    ring.push_back(ring.front());
+                }
+                
+                polygon.push_back(ring);
 
-            PoleOfInaccessibility poleFinder;
-
-            for (const auto& region : regions) 
-            {
-                Point labelPos = poleFinder.findOptimalLabelPosition(region.contour);
+                // Find the pole of inaccessibility
+                mapbox::geometry::point<double> pole = mapbox::polylabel(polygon, 1.0);
+                
+                // Convert label number to string
                 std::string labelText = std::to_string(region.clusterLabel);
-        
+                
                 int fontFace = cv::FONT_HERSHEY_PLAIN;
                 double fontScale = 1;
                 int thickness = 1;
@@ -322,11 +210,14 @@ class imageProcess {
                 cv::Size textSize = cv::getTextSize(labelText, fontFace, fontScale, thickness, &baseline);
 
                 // Ensure label is within image bounds
-                int textX = std::max(0, std::min(imgWithBorders.cols - textSize.width, static_cast<int>(labelPos.x - textSize.width / 2)));
-                int textY = std::max(textSize.height, std::min(imgWithBorders.rows, static_cast<int>(labelPos.y + textSize.height / 2)));
+                int textX = std::max(0, std::min(imgWithBorders.cols - textSize.width, 
+                                static_cast<int>(pole.x - textSize.width / 2)));
+                int textY = std::max(textSize.height, std::min(imgWithBorders.rows, 
+                                static_cast<int>(pole.y + textSize.height / 2)));
 
                 // Draw the label
-                cv::putText(imgWithBorders, labelText, cv::Point(textX, textY), fontFace, fontScale, cv::Scalar(0, 0, 0), thickness, cv::LINE_AA);
+                cv::putText(imgWithBorders, labelText, cv::Point(textX, textY), 
+                        fontFace, fontScale, cv::Scalar(0, 0, 0), thickness, cv::LINE_AA);
             }
             return true;
         }
