@@ -3,11 +3,12 @@
         {
             "type": "cppbuild",
             "label": "C/C++: clang build active file",
-            "command": "/usr/bin/clang",
+            "command": "/usr/bin/clang++",
             "args": [
                 "-fcolor-diagnostics",
                 "-fansi-escape-codes",
                 "-g",
+                "-I/usr/local/include/opencv4", // Include OpenCV headers
                 "${file}",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}"

@@ -69,6 +69,7 @@
         "utility": "cpp",
         "format": "cpp",
         "text_encoding": "cpp",
-        "thread": "cpp"
+        "thread": "cpp",
+        "filesystem": "cpp"
     }
 }
